@@ -58,7 +58,11 @@ def toggle_corrections():
     corrections_on = request.json.get("corrections")
     return jsonify({"status": "ok"})
 
-
+@app.route("/clear-chat", methods=["POST"])
+def clear_chat():
+    global conversation_history
+    conversation_history = []
+    return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
     app.run(debug=True)

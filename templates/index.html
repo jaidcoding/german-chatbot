@@ -232,6 +232,16 @@
                 cursor: pointer;
                 margin-left: 12px;
             ">📝 Corrections: ON</button>
+            <button onclick="clearChat()" style="
+    background: transparent;
+    border: 1px solid #333;
+    color: #666;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    margin-left: 8px;
+">New Chat</button>
         </div>
 
         <div id="chat-box"></div>
@@ -258,7 +268,10 @@ function toggleCorrections() {
         body: JSON.stringify({corrections: correctionsOn})
     });
 }
-
+function clearChat() {
+    document.getElementById("chat-box").innerHTML = "";
+    fetch("/clear-chat", {method: "POST"});
+}
         function sendMessage() {
             const input = document.getElementById("user-input");
             const chatBox = document.getElementById("chat-box");
