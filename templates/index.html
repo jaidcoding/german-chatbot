@@ -222,6 +222,16 @@
                 <p>Practice conversational German with AI</p>
             </div>
             <div class="status-dot"></div>
+            <button id="correction-toggle" onclick="toggleCorrections()" style="
+                background: transparent;
+                border: 1px solid #333;
+                color: #888;
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 0.75rem;
+                cursor: pointer;
+                margin-left: 12px;
+            ">📝 Corrections: ON</button>
         </div>
 
         <div id="chat-box"></div>
@@ -234,6 +244,21 @@
     </div>
 
     <script>
+let correctionsOn = true;
+
+function toggleCorrections() {
+    correctionsOn = !correctionsOn;
+    const btn = document.getElementById("correction-toggle");
+    btn.textContent = correctionsOn ? "📝 Corrections: ON" : "📝 Corrections: OFF";
+    btn.style.color = correctionsOn ? "#888" : "#555";
+
+    fetch("/toggle-corrections", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({corrections: correctionsOn})
+    });
+}
+
         function sendMessage() {
             const input = document.getElementById("user-input");
             const chatBox = document.getElementById("chat-box");
@@ -257,15 +282,17 @@
                 body: JSON.stringify({message: message})
             })
             .then(response => response.json())
-           .then(data => {
+            .then(data => {
     typing.style.display = "none";
     
     const messageRow = document.createElement("div");
     messageRow.className = "message-row bot";
-    messageRow.innerHTML = `<div class="message-label">hanz</div><div class="bot-message" id="current-message"></div>`;
+    
+    const uniqueId = "msg-" + Date.now();
+    messageRow.innerHTML = `<div class="message-label">hanz</div><div class="bot-message" id="${uniqueId}"></div>`;
     chatBox.appendChild(messageRow);
     
-    const messageDiv = document.getElementById("current-message");
+    const messageDiv = document.getElementById(uniqueId);
     const text = data.response;
     let index = 0;
     
