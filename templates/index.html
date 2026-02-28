@@ -242,6 +242,16 @@
     cursor: pointer;
     margin-left: 8px;
 ">New Chat</button>
+<button id="call-toggle" onclick="toggleCallMode()" style="
+    background: transparent;
+    border: 1px solid #333;
+    color: #666;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    margin-left: 8px;
+">📞 Call Mode: OFF</button>
         </div>
 
         <div id="chat-box"></div>
@@ -272,6 +282,22 @@ function clearChat() {
     document.getElementById("chat-box").innerHTML = "";
     fetch("/clear-chat", {method: "POST"});
 }
+
+let callMode = false;
+
+function toggleCallMode() {
+    callMode = !callMode;
+    const btn = document.getElementById("call-toggle");
+    btn.textContent = callMode ? "📞 Call Mode: ON" : "📞 Call Mode: OFF";
+    btn.style.color = callMode ? "#4ade80" : "#666";
+    btn.style.borderColor = callMode ? "#4ade80" : "#333";
+
+    fetch("/toggle-call-mode", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({callMode: callMode})
+    });
+}
         function sendMessage() {
             const input = document.getElementById("user-input");
             const chatBox = document.getElementById("chat-box");
@@ -297,6 +323,10 @@ function clearChat() {
             .then(response => response.json())
             .then(data => {
     typing.style.display = "none";
+    if (data.audio) {
+    const audio = new Audio(data.audio + "?t=" + Date.now());
+    audio.play();
+}
     
     const messageRow = document.createElement("div");
     messageRow.className = "message-row bot";

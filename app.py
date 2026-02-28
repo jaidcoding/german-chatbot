@@ -1,13 +1,25 @@
 from flask import Flask, render_template, request, jsonify
 import ollama
+import subprocess
+import os
 
 app = Flask(__name__)
 conversation_history = []
 corrections_on = True
+call_mode = False
 
 @app.route("/")
 def home():
     return render_template("index.html")
+
+def speak(text):
+    audio_path = os.path.join(os.path.dirname(__file__), "static", "response.wav")
+    os.makedirs(os.path.dirname(audio_path), exist_ok=True)
+    subprocess.run(
+        f'echo "{text}" | piper --model ~/piper-voices/de_DE-thorsten-medium.onnx --output_file {audio_path}',
+        shell=True
+    )
+    return "/static/response.wav"
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -41,21 +53,22 @@ def chat():
         "content": assistant_message
     })
 
-    return jsonify({"response": assistant_message})
-    
-    assistant_message = response['message']['content']
-    
-    conversation_history.append({
-        "role": "assistant",
-        "content": assistant_message
-    })
-    
-    return jsonify({"response": assistant_message})
+    audio_url = None
+    if call_mode:
+        audio_url = speak(assistant_message)
+
+    return jsonify({"response": assistant_message, "audio": audio_url})
 
 @app.route("/toggle-corrections", methods=["POST"])
 def toggle_corrections():
     global corrections_on
     corrections_on = request.json.get("corrections")
+    return jsonify({"status": "ok"})
+
+@app.route("/toggle-call-mode", methods=["POST"])
+def toggle_call_mode():
+    global call_mode
+    call_mode = request.json.get("callMode")
     return jsonify({"status": "ok"})
 
 @app.route("/clear-chat", methods=["POST"])
